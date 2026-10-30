@@ -1,9 +1,12 @@
 import Foundation
 
 enum ReminderUpdateSave {
-  static func save(isMoving: Bool, using save: () throws -> Void) throws {
+  static func save<Value>(
+    isMoving: Bool,
+    using save: () throws -> Value
+  ) throws -> Value {
     do {
-      try save()
+      return try save()
     } catch {
       let failure = error as NSError
       guard isMoving, failure.domain == "com.apple.reminderkit", failure.code == -3002 else {

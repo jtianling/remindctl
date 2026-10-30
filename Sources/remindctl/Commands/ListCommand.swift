@@ -84,7 +84,9 @@ enum ListCommand {
             }
           }
           try await store.deleteList(target: target)
-          if runtime.outputFormat == .standard {
+          if runtime.outputFormat == .json {
+            OutputRenderer.printDeleteResult(1, format: runtime.outputFormat)
+          } else if runtime.outputFormat == .standard {
             Swift.print("Deleted list \"\(title)\"")
           }
           return

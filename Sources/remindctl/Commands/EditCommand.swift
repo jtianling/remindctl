@@ -11,6 +11,7 @@ enum EditCommand {
         Use an index or ID prefix from the show output.
         --alarm schedules a notification; it does not enable the native Urgent toggle in Reminders.app.
         EventKit does not expose Urgent. To enable it, use Reminders.app.
+        Native flag/tag edits use system ReminderKit and must be separate from other fields.
         """,
       signature: CommandSignatures.withRuntimeFlags(
         CommandSignature(
@@ -46,7 +47,7 @@ enum EditCommand {
               help: "none|low|medium|high",
               parsing: .singleValue
             ),
-          ],
+          ] + EditCommandMetadata.options,
           flags: [
             .make(label: "clearDue", names: [.long("clear-due")], help: "Clear due date"),
             .make(label: "clearAlarm", names: [.long("clear-alarm")], help: "Clear alarm"),
@@ -54,7 +55,7 @@ enum EditCommand {
             .make(label: "noRepeat", names: [.long("no-repeat")], help: "Remove recurrence"),
             .make(label: "complete", names: [.long("complete")], help: "Mark completed"),
             .make(label: "incomplete", names: [.long("incomplete")], help: "Mark incomplete"),
-          ]
+          ] + EditCommandMetadata.flags
         )
       ),
       usageExamples: [
@@ -66,11 +67,15 @@ enum EditCommand {
         "remindctl edit 3 --clear-due --clear-alarm --no-repeat",
         "remindctl edit 4A83 --url \"https://example.com/product\"",
         "remindctl edit 4A83 --clear-url",
+        "remindctl edit 4A83 --flag --add-tag work",
+        "remindctl edit 4A83 --unflag --remove-tag work",
+        "remindctl edit 4A83 --rename-tag work --to-tag office",
       ]
     ) { values, runtime in
       guard let input = values.argument(0) else {
         throw ParsedValuesError.missingArgument("id")
       }
+      let metadataUpdate = try EditCommandMetadata.parse(values)
 
       let store = RemindersStore()
       try await store.requestAccess()
@@ -124,6 +129,16 @@ enum EditCommand {
       let hasChanges =
         title != nil || targetList != nil || notes != nil || urlUpdate != nil || dateUpdates.dueDate != nil
         || dateUpdates.alarmDate != nil || priority != nil || recurrenceUpdate != nil || isCompleted != nil
+      if !metadataUpdate.isEmpty {
+        guard !hasChanges else {
+          throw RemindCoreError.operationFailed(
+            "Edit native flag/tags separately from other reminder fields")
+        }
+        let updated = try await store.updateNativeMetadata(
+          id: reminder.id, update: metadataUpdate)
+        OutputRenderer.printReminder(updated, format: runtime.outputFormat)
+        return
+      }
       if !hasChanges {
         throw RemindCoreError.operationFailed("No changes specified")
       }

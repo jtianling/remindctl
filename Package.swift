@@ -12,9 +12,10 @@ let package = Package(
     .package(url: "https://github.com/steipete/Commander.git", from: "0.3.0"),
   ],
   targets: [
+    .target(name: "ReminderKitBridge"),
     .target(
       name: "RemindCore",
-      dependencies: [],
+      dependencies: ["ReminderKitBridge"],
       linkerSettings: [
         .linkedFramework("CoreLocation"),
         .linkedFramework("EventKit"),

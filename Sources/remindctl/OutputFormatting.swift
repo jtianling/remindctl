@@ -53,7 +53,8 @@ enum OutputRenderer {
           DateParsing.formatDisplay($0, isDateOnly: reminder.dueDateIsAllDay)
         } ?? "no due date"
       let recurrence = recurrenceSuffix(for: reminder)
-      Swift.print("✓ \(reminder.title) [\(reminder.listName)] — \(due)\(recurrence)")
+      let metadata = metadataSuffix(for: reminder)
+      Swift.print("✓ \(reminder.title) [\(reminder.listName)] — \(due)\(recurrence)\(metadata)")
     case .table:
       printRemindersTable([reminder])
     case .plain:
@@ -175,6 +176,12 @@ enum OutputRenderer {
     Swift.print("List: \(reminder.listName)")
     Swift.print("Status: \(reminder.isCompleted ? "completed" : "open")")
     Swift.print("Priority: \(reminder.priority.rawValue)")
+    if let flagged = reminder.isFlagged {
+      Swift.print("Flagged: \(flagged)")
+    }
+    if let tags = reminder.tags {
+      Swift.print("Tags: \(tags.map { "#" + $0 }.joined(separator: " "))")
+    }
 
     if let dueDate = reminder.dueDate {
       Swift.print("Due: \(DateParsing.formatDisplay(dueDate, isDateOnly: reminder.dueDateIsAllDay))")
@@ -205,6 +212,14 @@ enum OutputRenderer {
       Swift.print("Notes:")
       Swift.print(notes)
     }
+  }
+
+  private static func metadataSuffix(for reminder: ReminderItem) -> String {
+    guard let flagged = reminder.isFlagged, let tags = reminder.tags else {
+      return ""
+    }
+    let names = tags.map { "#" + $0 }.joined(separator: " ")
+    return " flagged=\(flagged) tags=[\(names)]"
   }
 
   private static func plainLine(for reminder: ReminderItem) -> String {

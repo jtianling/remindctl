@@ -123,6 +123,8 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
   public let locationTrigger: LocationTrigger?
   public let listID: String
   public let listName: String
+  public let isFlagged: Bool?
+  public let tags: [String]?
 
   public init(
     id: String,
@@ -140,7 +142,9 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
     recurrenceRule: RecurrenceRule? = nil,
     locationTrigger: LocationTrigger? = nil,
     listID: String,
-    listName: String
+    listName: String,
+    isFlagged: Bool? = nil,
+    tags: [String]? = nil
   ) {
     self.id = id
     self.title = title
@@ -158,6 +162,8 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
     self.locationTrigger = locationTrigger
     self.listID = listID
     self.listName = listName
+    self.isFlagged = isFlagged
+    self.tags = tags
   }
 }
 

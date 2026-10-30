@@ -12,6 +12,11 @@ enum InfoCommand {
         CommandSignature(
           arguments: [
             .make(label: "id", help: "Index or ID prefix", isOptional: false)
+          ],
+          flags: [
+            .make(
+              label: "native", names: [.long("native")],
+              help: "Include native flag and tags using system ReminderKit")
           ]
         )
       ),
@@ -19,6 +24,7 @@ enum InfoCommand {
         "remindctl info 1",
         "remindctl info 4A83",
         "remindctl info 4A83 --json",
+        "remindctl info 4A83 --native --json",
       ]
     ) { values, runtime in
       guard let input = values.argument(0) else {
@@ -33,7 +39,13 @@ enum InfoCommand {
         throw RemindCoreError.reminderNotFound(input)
       }
 
-      OutputRenderer.printReminderDetail(reminder, format: runtime.outputFormat)
+      let detailed =
+        if values.flag("native") {
+          try await reminder.withMetadata(store.nativeMetadata(id: reminder.id))
+        } else {
+          reminder
+        }
+      OutputRenderer.printReminderDetail(detailed, format: runtime.outputFormat)
     }
   }
 }

@@ -4,7 +4,7 @@
 
 Fast command-line access to Apple Reminders on macOS.
 
-`remindctl` is for scripts, agents, and terminal workflows that need to read and update the same reminders you see in Reminders.app. It uses Apple's public EventKit APIs, so reminders keep syncing through the normal system/iCloud path.
+`remindctl` 面向脚本, agent 和终端工作流, 读写 Reminders.app 中的提醒.  普通字段使用 Apple 公开的 EventKit API, 原生 flag/tag 编辑使用系统 ReminderKit 接口, 变更通过系统和 iCloud 正常同步.  
 
 Docs: https://remindctl.sh
 
@@ -51,6 +51,10 @@ remindctl link 1
 
 remindctl edit 1 --title "New title" --due 2026-01-04
 remindctl edit 1 --url "https://example.com/product"   # or --clear-url to remove it
+remindctl edit 1 --flag --add-tag work
+remindctl edit 1 --unflag --remove-tag work
+remindctl edit 1 --rename-tag work --to-tag office
+remindctl info 1 --native --json
 remindctl complete 1 2 3
 remindctl delete 4A83 --force
 ```
@@ -292,14 +296,14 @@ When running over SSH, grant access on the Mac that actually runs `remindctl`.
 Reminder reads skip orphaned EventKit reminders whose calendar is missing; other reminders remain available.
 If a calendar is missing after `add`, `edit`, or `complete` saves a reminder, the command reports `Reminder is missing a calendar` instead of crashing. The change has already been saved; check Reminders.app before retrying.
 
-`remindctl` intentionally sticks to public EventKit APIs. These Reminders.app features are not exposed through EventKit today:
+原生 flag/tag 通过私有 ReminderKit 接口读写, 需要与其他 EventKit 字段分开编辑.  macOS 更新可能改变这些接口, 不可用时命令会明确报错.  用法见 [命令说明](docs/commands.md).  以下功能仍不支持:
 
 - Native Reminders sections
-- Native Reminders tags and smart lists
+- Native Reminders smart lists
 - File/image attachments
 - Apple's private "Urgent" toggle
 
-Supporting those would require Apple to expose new public APIs or a separate non-EventKit backend.
+这些功能目前未通过 EventKit 或原生元数据后端提供.  
 
 Moving reminders with `edit --list` or `edit --list-id` can fail when either list is shared. If EventKit rejects the move with `com.apple.reminderkit error -3002`, move the reminder in Reminders.app, then retry any other edits. `remindctl` does not copy and delete reminders to work around this restriction because EventKit cannot preserve all Reminders.app metadata.
 

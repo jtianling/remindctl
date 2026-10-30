@@ -71,7 +71,21 @@ remindctl edit 4A83 --clear-due
 remindctl edit 4A83 --list Office
 remindctl edit 4A83 --list-id 7A12
 remindctl edit 4A83 --no-repeat
+remindctl edit 4A83 --flag
+remindctl edit 4A83 --unflag
+remindctl edit 4A83 --add-tag work --add-tag "#项目"
+remindctl edit 4A83 --remove-tag work
+remindctl edit 4A83 --rename-tag 项目 --to-tag 已归档
+remindctl info 4A83 --native --json
 ```
+
+`--flag` 和 `--unflag` 分别添加和删除 Reminders.app 原生旗标.  `--add-tag` 和 `--remove-tag` 可以重复使用, 标签名可以带一个 `#` 前缀, 但不能包含空格或额外的 `#`.  重复添加已有标签或删除不存在的标签不会产生额外变更.  标签匹配不区分大小写.  
+
+`--rename-tag <旧名称> --to-tag <新名称>` 只修改指定提醒上的标签, 不会重命名其他提醒上的同名标签.  原标签不存在时会报错, 新标签已存在时会合并.  flag 和 tag 操作可以合并在同一条命令中, 所有变更在同一次原生事务中保存.  冲突参数或无效标签会在保存前报错.  
+
+flag/tag 使用系统私有 ReminderKit 接口, 不直接修改 Reminders 数据库.  它们需要与标题, 日期, 备注等 EventKit 字段分开执行, 混用时命令会拒绝保存.  macOS 更新可能改变私有接口, 接口缺失或系统拒绝访问时会返回具体错误.  普通命令继续使用 EventKit.  
+
+`info --native` 和 flag/tag 编辑结果的 JSON 包含 `isFlagged` 与 `tags`, 可以核对保存后的原生状态.  不带 `--native` 的普通读取不会查询这些字段, 字段缺失表示未读取, 不能当作没有 flag 或 tag.  
 
 Moving a reminder with `--list` or `--list-id` can fail when the source or destination list is shared. If EventKit rejects the move with `com.apple.reminderkit error -3002`, move the reminder in Reminders.app, then retry any other edits. The command does not fall back to copying and deleting the reminder, since public EventKit cannot preserve all Reminders.app metadata.
 
@@ -98,6 +112,7 @@ remindctl list --list-id 7A12 --rename Archive
 ```
 
 Mutating list operations accept one list name. Read-only list views can accept multiple names.
+`list <name> --delete --force --json` 和 `list --list-id <id> --delete --force --json` 删除成功后返回 `{"deleted":1}`, 可以直接解析 JSON 结果.  
 Choose only one of `--create`, `--delete`, or `--rename`, and provide its target; conflicting or missing mutation targets fail before accessing Reminders.
 `list <name> --create` creates a missing list or reuses a unique matching list. Repeating it preserves the list and its reminders; `--json` reports the current incomplete and overdue counts. An ambiguous name fails instead of creating another list.
 List names resolve by exact match, case-insensitive match, then a normalized match that ignores emoji and punctuation.

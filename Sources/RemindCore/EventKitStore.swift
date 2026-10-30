@@ -175,11 +175,17 @@ public actor RemindersStore {
       reminder.isCompleted = isCompleted
     }
 
-    try ReminderUpdateSave.save(isMoving: reminder.calendar?.calendarIdentifier != originalCalendarID) {
+    return try ReminderUpdateSave.save(
+      isMoving: reminder.calendar?.calendarIdentifier != originalCalendarID
+    ) {
       try eventStore.save(reminder, commit: true)
+      return try item(from: reminder)
     }
+  }
 
-    return try item(from: reminder)
+  func refreshedReminder(id: String) throws -> ReminderItem {
+    eventStore.reset()
+    return try item(from: reminder(withID: id))
   }
 
   public func completeReminders(ids: [String]) async throws -> [ReminderItem] {

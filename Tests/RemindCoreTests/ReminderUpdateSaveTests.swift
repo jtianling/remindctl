@@ -7,20 +7,24 @@ struct ReminderUpdateSaveTests {
   @Test("A rejected list move explains the shared-list limitation")
   func rejectedMove() {
     let error = NSError(domain: "com.apple.reminderkit", code: -3002)
-    #expect(throws: RemindCoreError.operationFailed(
-      "Unable to move reminder between lists: EventKit rejected the move (com.apple.reminderkit error -3002). "
-        + "Moves involving shared lists may not be supported. Move the reminder in Reminders.app, "
-        + "then retry any other edits."
-    )) {
+    #expect(
+      throws: RemindCoreError.operationFailed(
+        "Unable to move reminder between lists: EventKit rejected the move (com.apple.reminderkit error -3002). "
+          + "Moves involving shared lists may not be supported. Move the reminder in Reminders.app, "
+          + "then retry any other edits."
+      )
+    ) {
       try ReminderUpdateSave.save(isMoving: true) { throw error }
     }
   }
 
-  @Test("Unrelated save errors are preserved", arguments: [
-    (false, "com.apple.reminderkit", -3002),
-    (true, "OtherDomain", -3002),
-    (true, "com.apple.reminderkit", -3001),
-  ])
+  @Test(
+    "Unrelated save errors are preserved",
+    arguments: [
+      (false, "com.apple.reminderkit", -3002),
+      (true, "OtherDomain", -3002),
+      (true, "com.apple.reminderkit", -3001),
+    ])
   func unrelatedErrors(input: (Bool, String, Int)) {
     let (isMoving, domain, code) = input
     let original = NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: "Original failure"])
@@ -37,5 +41,11 @@ struct ReminderUpdateSaveTests {
     var calls = 0
     try ReminderUpdateSave.save(isMoving: isMoving) { calls += 1 }
     #expect(calls == 1)
+  }
+
+  @Test("Save results can be returned within the actor-isolated closure")
+  func saveResult() throws {
+    let result = try ReminderUpdateSave.save(isMoving: false) { "saved" }
+    #expect(result == "saved")
   }
 }
