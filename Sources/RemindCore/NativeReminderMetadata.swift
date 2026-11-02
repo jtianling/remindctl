@@ -14,7 +14,7 @@ extension RemindersStore {
 
   public func updateNativeMetadata(
     id: String, update: ReminderMetadataUpdate
-  ) throws -> ReminderItem {
+  ) async throws -> ReminderItem {
     let result = try RCReminderMetadataStore.updateReminder(
       id,
       flagged: update.isFlagged.map { NSNumber(value: $0) },
@@ -25,7 +25,7 @@ extension RemindersStore {
     )
     let metadata = ReminderMetadata(isFlagged: result.flagged, tags: result.tags)
     do {
-      return try refreshedReminder(id: id).withMetadata(metadata)
+      return try await refreshedReminder(id: id).withMetadata(metadata)
     } catch {
       throw RemindCoreError.operationFailed(
         "Native metadata was saved, but refreshing the reminder failed: "
@@ -55,7 +55,9 @@ extension ReminderItem {
       listID: listID,
       listName: listName,
       isFlagged: metadata.isFlagged,
-      tags: metadata.tags
+      tags: metadata.tags,
+      attachmentCount: attachmentCount,
+      attachmentError: attachmentError
     )
   }
 }

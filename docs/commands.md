@@ -131,6 +131,10 @@ remindctl info 4A83 --json
 
 `attachments <id>` 读取指定提醒的原生图片和文件附件, 不修改提醒.  `--json` 返回附件数组, 没有附件时返回 `[]`.  每个附件包含 `id`, `reminderID`, `kind`, `contentType`, `byteCount`, `filename` 和 `isAvailable`.  网页链接不算图片或文件附件.  
 
+普通 `show`, `list <name>`, `info`, `search` 和 JSON 导出默认包含 `attachmentCount`, 不需要加 `--native`.  数量大于 0 时, 可以继续执行 `remindctl attachments <id>` 查看或导出.  数量包含尚未下载的图片和文件附件, 不包含网页链接.  普通文本列表显示 `attachments=N`, `info` 会提供下一步命令.  plain 和 table 在末尾追加附件数量列, CSV 在末尾追加 `attachmentCount` 和 `attachmentError`.  
+
+附件计数读取失败或超时时仍返回提醒内容, JSON 中省略 `attachmentCount` 并提供 `attachmentError`, 标准错误中也会记录具体原因, 文本数量显示 `unknown`.  缺失数量表示未知, 只有 `attachmentCount: 0` 才表示确认没有图片或文件附件.  
+
 `--output <目录>` 将全部可用附件复制到本机目录, JSON 中的 `exportedPath` 是实际文件路径, 可直接交给图片查看或文件读取工具.  导出名使用附件 UUID 加文件类型扩展名, 因为系统接口不提供原始文件名.  命令拒绝覆盖已有文件, 也拒绝向 Reminders 数据目录导出.  没有附件时不创建目录.  
 
 附件读取依赖系统私有 ReminderKit 接口.  目前只导出已经下载且可读取的本地附件; 未下载或不可访问时, 列举结果用 `isAvailable: false` 和 `unavailableReason` 说明原因, 导出命令报错.  可先在 Reminders.app 下载附件后重试.  复制中途发生文件系统错误时会说明原因, 已复制的文件保留在输出目录.  

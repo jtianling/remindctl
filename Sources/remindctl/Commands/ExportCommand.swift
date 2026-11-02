@@ -90,9 +90,14 @@ enum ExportCommand {
         reminder.dueDate.map { ISO8601DateFormatter().string(from: $0) } ?? "",
         reminder.notes ?? "",
         reminder.url?.absoluteString ?? "",
+        reminder.attachmentCount.map(String.init) ?? "unknown",
+        reminder.attachmentError ?? "",
       ]
     }
-    let header = ["id", "title", "list", "completed", "priority", "dueDate", "notes", "url"]
+    let header = [
+      "id", "title", "list", "completed", "priority", "dueDate", "notes", "url",
+      "attachmentCount", "attachmentError",
+    ]
     for row in [header] + rows {
       Swift.print(row.map(csvField).joined(separator: ","))
     }

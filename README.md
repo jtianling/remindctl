@@ -298,7 +298,7 @@ When running over SSH, grant access on the Mac that actually runs `remindctl`.
 Reminder reads skip orphaned EventKit reminders whose calendar is missing; other reminders remain available.
 If a calendar is missing after `add`, `edit`, or `complete` saves a reminder, the command reports `Reminder is missing a calendar` instead of crashing. The change has already been saved; check Reminders.app before retrying.
 
-原生 flag/tag 通过私有 ReminderKit 接口读写, 需要与其他 EventKit 字段分开编辑.  图片和文件附件可以用 `attachments <id> [--output <目录>]` 读取或导出.  macOS 更新可能改变这些接口, 不可用时命令会明确报错.  用法见 [命令说明](docs/commands.md).  以下功能仍不支持:
+原生 flag/tag 通过私有 ReminderKit 接口读写, 需要与其他 EventKit 字段分开编辑.  普通提醒查询默认提供 `attachmentCount`, 有图片或文件附件时可以继续用 `attachments <id> [--output <目录>]` 读取或导出.  附件计数失败时保留提醒内容并报告 `attachmentError`, 不会将未知数量当作 0.  macOS 更新可能改变这些接口, 不可用时命令会明确报错.  用法见 [命令说明](docs/commands.md).  以下功能仍不支持:
 
 - Native Reminders sections
 - Native Reminders smart lists

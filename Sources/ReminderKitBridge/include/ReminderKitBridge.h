@@ -32,4 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
                                                       error:(NSError **)error;
 @end
 
+@interface RCReminderAttachmentSummary : NSObject
+@property(nonatomic, copy, readonly) NSString *identifier;
+@property(nonatomic, copy, readonly, nullable) NSNumber *count;
+@property(nonatomic, copy, readonly, nullable) NSString *failure;
+@end
+
+@interface RCReminderAttachmentDiscovery : NSObject
++ (nullable NSArray<RCReminderAttachmentSummary *> *)readSummaries:
+    (NSArray<NSString *> *)identifiers error:(NSError **)error;
+@end
+
 NS_ASSUME_NONNULL_END

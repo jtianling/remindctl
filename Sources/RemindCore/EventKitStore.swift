@@ -130,7 +130,7 @@ public actor RemindersStore {
       reminder.addAlarm(try await locationAlarm(from: locationTrigger))
     }
     try eventStore.save(reminder, commit: true)
-    return try item(from: reminder)
+    return try await item(from: reminder)
   }
 
   public func updateReminder(id: String, update: ReminderUpdate) async throws -> ReminderItem {
@@ -175,17 +175,18 @@ public actor RemindersStore {
       reminder.isCompleted = isCompleted
     }
 
-    return try ReminderUpdateSave.save(
+    let saved = try ReminderUpdateSave.save(
       isMoving: reminder.calendar?.calendarIdentifier != originalCalendarID
     ) {
       try eventStore.save(reminder, commit: true)
-      return try item(from: reminder)
+      return try Self.reminderItem(from: reminder, calendar: calendar)
     }
+    return await ReminderAttachmentDiscovery.discover([saved])[0]
   }
 
-  func refreshedReminder(id: String) throws -> ReminderItem {
+  func refreshedReminder(id: String) async throws -> ReminderItem {
     eventStore.reset()
-    return try item(from: reminder(withID: id))
+    return try await item(from: reminder(withID: id))
   }
 
   public func completeReminders(ids: [String]) async throws -> [ReminderItem] {
@@ -194,7 +195,7 @@ public actor RemindersStore {
       let reminder = try reminder(withID: id)
       reminder.isCompleted = true
       try eventStore.save(reminder, commit: true)
-      updated.append(try item(from: reminder))
+      updated.append(try await item(from: reminder))
     }
     return updated
   }
@@ -238,7 +239,8 @@ extension RemindersStore {
       return { request.cancel() }
     }
 
-    return reminderData.map { $0.item(calendar: calendar) }
+    return await ReminderAttachmentDiscovery.discover(
+      reminderData.map { $0.item(calendar: calendar) })
   }
 
   private func reminder(withID id: String) throws -> EKReminder {
@@ -300,8 +302,9 @@ extension RemindersStore {
     return result
   }
 
-  private func item(from reminder: EKReminder) throws -> ReminderItem {
-    try Self.reminderItem(from: reminder, calendar: calendar)
+  private func item(from reminder: EKReminder) async throws -> ReminderItem {
+    let item = try Self.reminderItem(from: reminder, calendar: calendar)
+    return await ReminderAttachmentDiscovery.discover([item])[0]
   }
 
   private func replaceRecurrence(on reminder: EKReminder, with rule: RecurrenceRule?) {

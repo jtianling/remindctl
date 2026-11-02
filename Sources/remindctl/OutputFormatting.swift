@@ -54,7 +54,8 @@ enum OutputRenderer {
         } ?? "no due date"
       let recurrence = recurrenceSuffix(for: reminder)
       let metadata = metadataSuffix(for: reminder)
-      Swift.print("✓ \(reminder.title) [\(reminder.listName)] — \(due)\(recurrence)\(metadata)")
+      let attachments = attachmentSuffix(reminder)
+      Swift.print("✓ \(reminder.title) [\(reminder.listName)] — \(due)\(recurrence)\(metadata)\(attachments)")
     case .table:
       printRemindersTable([reminder])
     case .plain:
@@ -130,7 +131,10 @@ enum OutputRenderer {
       Swift.print("No reminders found")
       return
     }
-    Swift.print(["ID", "Status", "Due", "Priority", "List", "Title"].joined(separator: "\t"))
+    Swift.print(
+      [
+        "ID", "Status", "Due", "Priority", "List", "Title", "Attachments",
+      ].joined(separator: "\t"))
     for reminder in sorted {
       let due =
         reminder.dueDate.map {
@@ -144,6 +148,7 @@ enum OutputRenderer {
           reminder.priority == .none ? "" : reminder.priority.rawValue,
           reminder.listName,
           reminder.title,
+          attachmentCountText(reminder),
         ].joined(separator: "\t"))
     }
   }
@@ -167,7 +172,8 @@ enum OutputRenderer {
       } ?? "no due date"
     let priority = reminder.priority == .none ? "" : " priority=\(reminder.priority.rawValue)"
     let recurrence = recurrenceSuffix(for: reminder)
-    return "[\(status)] \(reminder.title) [\(reminder.listName)] — \(due)\(priority)\(recurrence)"
+    let attachments = attachmentSuffix(reminder)
+    return "[\(status)] \(reminder.title) [\(reminder.listName)] — \(due)\(priority)\(recurrence)\(attachments)"
   }
 
   private static func printReminderDetailStandard(_ reminder: ReminderItem) {
@@ -176,6 +182,7 @@ enum OutputRenderer {
     Swift.print("List: \(reminder.listName)")
     Swift.print("Status: \(reminder.isCompleted ? "completed" : "open")")
     Swift.print("Priority: \(reminder.priority.rawValue)")
+    Swift.print(attachmentDetail(reminder))
     if let flagged = reminder.isFlagged {
       Swift.print("Flagged: \(flagged)")
     }
@@ -239,6 +246,7 @@ enum OutputRenderer {
       reminder.priority.rawValue,
       due,
       reminder.title,
+      attachmentCountText(reminder),
     ].joined(separator: "\t")
   }
 

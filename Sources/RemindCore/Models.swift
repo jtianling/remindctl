@@ -125,6 +125,8 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
   public let listName: String
   public let isFlagged: Bool?
   public let tags: [String]?
+  public let attachmentCount: Int?
+  public let attachmentError: String?
 
   public init(
     id: String,
@@ -144,7 +146,9 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
     listID: String,
     listName: String,
     isFlagged: Bool? = nil,
-    tags: [String]? = nil
+    tags: [String]? = nil,
+    attachmentCount: Int? = nil,
+    attachmentError: String? = nil
   ) {
     self.id = id
     self.title = title
@@ -164,6 +168,8 @@ public struct ReminderItem: Identifiable, Codable, Sendable, Equatable {
     self.listName = listName
     self.isFlagged = isFlagged
     self.tags = tags
+    self.attachmentCount = attachmentCount
+    self.attachmentError = attachmentError
   }
 }
 
