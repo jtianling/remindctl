@@ -38,7 +38,7 @@ Indexes such as `1` come from the default reminder listing. Most commands also a
 - Supports due dates, alarms, recurrence, priorities, notes, exact list IDs, completion, deletion, and location triggers.
 - Emits JSON for automation, TSV with `--plain`, tables with `--format table`, and compact human output by default.
 - Includes `doctor`, `export`, `link`, `open`, and shell completion helpers for agent workflows.
-- 支持原生 flag/tag 编辑和 `info --native` 查询, 通过系统私有 ReminderKit 接口保存, 不直接写数据库.  sections, smart lists, attachments 和 "Urgent" 仍不支持.  
+- 支持原生 flag/tag 编辑, `info --native` 查询和 `attachments` 图片/文件附件读取导出, 使用系统私有 ReminderKit 接口, 不直接写数据库.  sections, smart lists 和 "Urgent" 仍不支持.  
 
 ## Pick your path
 

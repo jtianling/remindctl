@@ -121,11 +121,19 @@ If a name is ambiguous, use `--list-id`.
 ## Search and inspect
 
 ```bash
+remindctl attachments 4A83 --json
+remindctl attachments 4A83 --output ./attachments --json
 remindctl search "invoice" --list Work
 remindctl search "project" --completed --json
 remindctl info 1
 remindctl info 4A83 --json
 ```
+
+`attachments <id>` 读取指定提醒的原生图片和文件附件, 不修改提醒.  `--json` 返回附件数组, 没有附件时返回 `[]`.  每个附件包含 `id`, `reminderID`, `kind`, `contentType`, `byteCount`, `filename` 和 `isAvailable`.  网页链接不算图片或文件附件.  
+
+`--output <目录>` 将全部可用附件复制到本机目录, JSON 中的 `exportedPath` 是实际文件路径, 可直接交给图片查看或文件读取工具.  导出名使用附件 UUID 加文件类型扩展名, 因为系统接口不提供原始文件名.  命令拒绝覆盖已有文件, 也拒绝向 Reminders 数据目录导出.  没有附件时不创建目录.  
+
+附件读取依赖系统私有 ReminderKit 接口.  目前只导出已经下载且可读取的本地附件; 未下载或不可访问时, 列举结果用 `isAvailable: false` 和 `unavailableReason` 说明原因, 导出命令报错.  可先在 Reminders.app 下载附件后重试.  复制中途发生文件系统错误时会说明原因, 已复制的文件保留在输出目录.  
 
 ## Export, links, and app handoff
 

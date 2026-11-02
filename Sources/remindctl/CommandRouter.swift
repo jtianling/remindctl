@@ -13,6 +13,7 @@ struct CommandRouter {
     ListCommand.spec,
     SearchCommand.spec,
     InfoCommand.spec,
+    AttachmentsCommand.spec,
     AddCommand.spec,
     EditCommand.spec,
     CompleteCommand.spec,

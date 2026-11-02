@@ -1,8 +1,8 @@
 #import "ReminderKitBridge.h"
-#import "ReminderKitContracts.h"
+#import "ReminderKitAccess.h"
 #import <dlfcn.h>
 
-static void RCRequire(id object, NSArray<NSString *> *selectors) {
+void RCRequire(id object, NSArray<NSString *> *selectors) {
   for (NSString *name in selectors) {
     if (!object || ![object respondsToSelector:NSSelectorFromString(name)]) {
       @throw [NSException exceptionWithName:@"ReminderKitUnavailable"
@@ -13,14 +13,14 @@ static void RCRequire(id object, NSArray<NSString *> *selectors) {
   }
 }
 
-static void RCSetError(NSError **error, NSString *message, NSError *underlying) {
+void RCSetError(NSError **error, NSString *message, NSError *underlying) {
   if (!error) return;
   NSMutableDictionary *info = [@{NSLocalizedDescriptionKey: message} mutableCopy];
   if (underlying) info[NSUnderlyingErrorKey] = underlying;
   *error = [NSError errorWithDomain:@"remindctl.ReminderKit" code:1 userInfo:info];
 }
 
-static id RCStore(void) {
+id RCStore(void) {
   static void *framework;
   static dispatch_once_t once;
   dispatch_once(&once, ^{
@@ -40,8 +40,7 @@ static id RCStore(void) {
   return store;
 }
 
-static id RCReminder(id<RCNativeStore> store, NSString *identifier,
-                     NSError **error) {
+id RCReminder(id<RCNativeStore> store, NSString *identifier, NSError **error) {
   NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:identifier];
   if (!uuid) {
     RCSetError(error, @"Native metadata requires a UUID reminder identifier", nil);
